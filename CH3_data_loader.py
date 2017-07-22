@@ -51,6 +51,9 @@ def load_training_data(split_frac=0.1, testing_mode = False):
     # Cleaning up the date and time data
     parse_date_time_data(data_frame)
     
+    # Getting rid of redundancy in browserid
+    remove_browserid_redundancy(data_frame)
+    
     # Finding the columns of the Dataframe
     data_features = data_frame.columns
     
@@ -110,7 +113,29 @@ def parse_date_time_data(df):
     
     # removing the original datetime columns
     del df['datetime']
+
+def remove_browserid_redundancy(df):
+    """
+    Removes identical values for the browser id
     
+    Args:
+        df(pandas dataframe): the input data
+        
+    Returns:
+        None
+        
+    Side effect:
+        changes the input df
+    """
+    
+    df['browserid'].replace(['Mozilla Firefox', 'Mozilla'] , ['Firefox']*2, 
+      inplace=True) # Firefox
+    df['browserid'].replace(['Google Chrome'] , ['Chrome']*1, 
+      inplace=True) # Chrome
+    df['browserid'].replace(['InternetExplorer'] , ['IE']*1, 
+      inplace=True) # IE
+      
+    print("\nBrowers narrowed down to ", df['browserid'].unique())
     
 ###############     ad-hoc Testing     ###############
 if __name__ == "__main__":
