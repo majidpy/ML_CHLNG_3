@@ -7,7 +7,6 @@ Method: Logistic Regression
 import numpy as np
 import pandas as pd
 import datetime as dt
-from sklearn.linear_model import LogisticRegression
 
 ###############     Constants     ###############
 DEBUG_MODE = True
@@ -47,7 +46,7 @@ def load_training_data(split_frac=0.1, testing_mode = False):
     data_frame = data_frame.dropna(how='any')
 
     # Report on unique values in each feature
-    # num_unique_val_fetures(data_frame)
+    num_unique_val_fetures(data_frame)
     
     # Cleaning up the date and time data
     parse_date_time_data(data_frame)
@@ -102,8 +101,7 @@ def parse_date_time_data(df):
         weekdays_array[cnt] = int(date.weekday())
         hour_array[cnt]     = int(date.hour)
         cnt += 1
-    
-    print(df.shape)    
+       
     # Adding new columns
     df['weekday'] = pd.Series(weekdays_array, 
       index=df.index) # weekdays, Monday:0 ... Friday:6
@@ -111,9 +109,7 @@ def parse_date_time_data(df):
       index=df.index) # hour during the day
     
     # removing the original datetime columns
-    print(df.shape)
     del df['datetime']
-    print(df.shape)
     
     
 ###############     ad-hoc Testing     ###############
