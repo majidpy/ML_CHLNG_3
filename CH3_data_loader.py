@@ -6,6 +6,7 @@ Method: Logistic Regression
 ###############     Libraries     ###############
 import numpy as np
 import pandas as pd
+import datetime as dt
 from sklearn.linear_model import LogisticRegression
 
 ###############     Constants     ###############
@@ -46,11 +47,13 @@ def load_training_data(split_frac=0.1, testing_mode = False):
     data_frame = data_frame.dropna(how='any')
 
     # Report on unique values in each feature
-    num_unique_val_fetures(data_frame)
+    # num_unique_val_fetures(data_frame)
+    
+    # Cleaning up the date and time data
+    parse_date_time_data(data_frame)
     
     # Finding the columns of the Dataframe
-    data_features = data_frame.columns   
-    
+    data_features = data_frame.columns
     
     return (data_frame, data_features)
 
@@ -71,9 +74,51 @@ def num_unique_val_fetures(df):
     for c in cols:
         n = len(df[c].unique())
         print('%s has %d uniqe values' %(c, n))
+        
+def parse_date_time_data(df):
+    """
+    Changes the given dates in the dataframe into week days
+    
+    Args:
+        df(pandas dataframe): the input data
+        
+    Returns:
+        None
+        
+    Side effect:
+        It create two new columns in the dataframe: "weekday" and "hour"
+        And removes the original datetime string column
+    """
+    
+    # Extracting the original datetime string column
+    date_time = df['datetime']
+    
+    weekdays_array = np.zeros(len(date_time), dtype='int')
+    hour_array     = np.zeros(len(date_time), dtype='int')
+    
+    cnt = 0
+    for d in date_time:
+        date = dt.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
+        weekdays_array[cnt] = int(date.weekday())
+        hour_array[cnt]     = int(date.hour)
+        cnt += 1
+    
+    print(df.shape)    
+    # Adding new columns
+    df['weekday'] = pd.Series(weekdays_array, 
+      index=df.index) # weekdays, Monday:0 ... Friday:6
+    df['hour'] = pd.Series(hour_array, 
+      index=df.index) # hour during the day
+    
+    # removing the original datetime columns
+    print(df.shape)
+    del df['datetime']
+    print(df.shape)
+    
     
 ###############     ad-hoc Testing     ###############
-load_training_data(testing_mode = DEBUG_MODE)
+if __name__ == "__main__":
+    load_training_data(testing_mode = DEBUG_MODE)
 
 
 
