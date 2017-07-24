@@ -6,13 +6,14 @@ Method: Logistic Regression
 ###############     Libraries     ###############
 import numpy as np
 import pandas as pd
-import datetime as dt
+from sklearn.model_selection  import train_test_split
+from sklearn import preprocessing
 
 ###############     Constants     ###############
 DEBUG_MODE = True
 
 ###############     Functions definitions     ###############
-def load_training_data(split_frac=0.1, testing_mode = False):
+def load_training_data(split_frac=0.1, drop_na=True, testing_mode=False):
     """
     Loads the training data from files and turns them into tables ready for 
     learning algorithms
@@ -41,9 +42,10 @@ def load_training_data(split_frac=0.1, testing_mode = False):
         data_frame = pd.read_csv('data/train.csv')
     print("Data loaded\n")
     
-    # Dropping data records with NaN
-    # Can be improved later, but for now dropping them for simplicity
-    data_frame = data_frame.dropna(how='any')
+    if drop_na:
+        # Dropping data records with NaN
+        # Can be improved later, but for now dropping them for simplicity
+        data_frame = data_frame.dropna(how='any')
 
     # Report on unique values in each feature
     num_unique_val_fetures(data_frame)
@@ -54,10 +56,31 @@ def load_training_data(split_frac=0.1, testing_mode = False):
     # Getting rid of redundancy in browserid
     remove_browserid_redundancy(data_frame)
     
+    # Label encoding the stringg/object data
+    encode_labels(data_frame)
+    
     # Finding the columns of the Dataframe
     data_features = data_frame.columns
     
-    return (data_frame, data_features)
+    # Turning data_fram into numerical matrix
+    X = np.c_[data_frame['siteid'].values, data_frame['offerid'].values, 
+              data_frame['category'].values, data_frame['merchant'].values, 
+              data_frame['countrycode_le'].values, 
+              data_frame['browserid_le'].values, data_frame['devid_le'].values, 
+              data_frame['day'].values, data_frame['hour'].values]
+
+    y = data_frame['click'].values
+                  
+    # Splitting dataset into train and test 
+    if (split_frac > 0):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_frac)
+    else:
+        X_train = X
+        X_test  = []
+        y_train = y
+        y_test  = []
+        
+    return (X_train, X_test, y_train, y_test, data_features)
 
 def num_unique_val_fetures(df):
     """
@@ -98,12 +121,8 @@ def parse_date_time_data(df):
     weekdays_array = np.zeros(len(date_time), dtype='int')
     hour_array     = np.zeros(len(date_time), dtype='int')
     
-    cnt = 0
-    for d in date_time:
-        date = dt.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
-        weekdays_array[cnt] = int(date.weekday())
-        hour_array[cnt]     = int(date.hour)
-        cnt += 1
+    df['day']=pd.to_datetime(df['datetime']).apply(lambda x: x.dayofweek)
+    df['hour']=pd.to_datetime(df['datetime']).apply(lambda x: x.hour)
        
     # Adding new columns
     df['weekday'] = pd.Series(weekdays_array, 
@@ -128,14 +147,21 @@ def remove_browserid_redundancy(df):
         changes the input df
     """
     
-    df['browserid'].replace(['Mozilla Firefox', 'Mozilla'] , ['Firefox']*2, 
-      inplace=True) # Firefox
-    df['browserid'].replace(['Google Chrome'] , ['Chrome']*1, 
-      inplace=True) # Chrome
-    df['browserid'].replace(['InternetExplorer'] , ['IE']*1, 
-      inplace=True) # IE
+    df['browserid'].replace(to_replace=['Mozilla Firefox', 'Mozilla'], 
+      value='Firefox', inplace=True) # Firefox
+    df['browserid'].replace(to_replace=['Google Chrome'], 
+      value='Chrome', inplace=True) # Chrome
+    df['browserid'].replace(to_replace=['InternetExplorer', 'Internet Explorer'], 
+      value='IE', inplace=True) # IE
       
-    print("\nBrowers narrowed down to ", df['browserid'].unique())
+    print("\nBrowers narrowed down to ", df['browserid'].unique(), "\n")
+
+def encode_labels(df):
+    encoder = preprocessing.LabelEncoder()
+    for feat in ('countrycode', 'browserid', 'devid'):
+        encoder.fit(df[feat])
+        df[feat + '_le'] = encoder.transform(df[feat])
+        del df[feat]
     
 ###############     ad-hoc Testing     ###############
 if __name__ == "__main__":
