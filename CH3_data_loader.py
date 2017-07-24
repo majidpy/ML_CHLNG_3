@@ -13,7 +13,8 @@ from sklearn import preprocessing
 DEBUG_MODE = True
 
 ###############     Functions definitions     ###############
-def load_training_data(split_frac=0.1, drop_na=True, testing_mode=False):
+def load_training_data(split_frac=0.1, drop_na=True, 
+                       testing_mode=False, impute=True):
     """
     Loads the training data from files and turns them into tables ready for 
     learning algorithms
@@ -25,12 +26,12 @@ def load_training_data(split_frac=0.1, drop_na=True, testing_mode=False):
         A tuple with the following values in order
         0 X_train (numpy matrix): features of the model (original and engineered) prepared 
         for feeding to learning algorithm
+
+        1 X_test (numpy matrix): features of the model for testing training accuracy
         
-        1 y_train (numpy matrix): the target value for train set
-        
-        2 X_train (numpy matrix): features of the model for testing training accuracy
-        
-        3 y_train (numpy matrix): target values for testing 
+        2 y_train (numpy matrix): the target value for train set
+                
+        3 y_test (numpy matrix): target values for testing 
         
         4 data_features(string list): main features names
     """
@@ -44,7 +45,6 @@ def load_training_data(split_frac=0.1, drop_na=True, testing_mode=False):
     
     if drop_na:
         # Dropping data records with NaN
-        # Can be improved later, but for now dropping them for simplicity
         data_frame = data_frame.dropna(how='any')
 
     # Report on unique values in each feature
@@ -80,7 +80,61 @@ def load_training_data(split_frac=0.1, drop_na=True, testing_mode=False):
         y_train = y
         y_test  = []
         
+    # imputating data
+    if impute:
+        imp = preprocessing.Imputer()
+        
+        imp = imp.fit(X_train)
+        X_train = imp.transform(X_train)
+        
+        imp = imp.fit(X_test)
+        X_test = imp.transform(X_test)
+        
     return (X_train, X_test, y_train, y_test, data_features)
+
+def load_test_data(drop_na=True, impute=True):
+    """
+    Loads the test data from files and turns them into tables ready for 
+    learning algorithms
+    Args:
+        None
+        
+    Returns:
+        X_test (numpy matrix): features of the model (original and engineered) prepared 
+        for feeding to learning algorithm
+    """
+
+    # Loading the dataset
+    print("\nStarted loading test data ...")
+    data_frame = pd.read_csv('data/test.csv')
+    print("Data loaded\n")    
+
+    if drop_na:
+        data_frame = data_frame.dropna(how='any')
+
+    # Cleaning up the date and time data
+    parse_date_time_data(data_frame)
+    
+    # Getting rid of redundancy in browserid
+    remove_browserid_redundancy(data_frame)
+    
+    # Label encoding the stringg/object data
+    encode_labels(data_frame)
+    
+    # Turning data_fram into numerical matrix
+    X = np.c_[data_frame['siteid'].values, data_frame['offerid'].values, 
+              data_frame['category'].values, data_frame['merchant'].values, 
+              data_frame['countrycode_le'].values, 
+              data_frame['browserid_le'].values, data_frame['devid_le'].values, 
+              data_frame['day'].values, data_frame['hour'].values]
+    
+    # imputating data
+    if impute:
+        imp = preprocessing.Imputer()
+        imp = imp.fit(X)
+        X = imp.transform(X)
+    
+    return X
 
 def num_unique_val_fetures(df):
     """
@@ -155,17 +209,26 @@ def remove_browserid_redundancy(df):
       value='IE', inplace=True) # IE
       
     print("\nBrowers narrowed down to ", df['browserid'].unique(), "\n")
+    
 
-def encode_labels(df):
+def encode_labels(df, has_nan=True):
     encoder = preprocessing.LabelEncoder()
     for feat in ('countrycode', 'browserid', 'devid'):
+        if has_nan: # temporarily replacing NaN values
+            series_nan_mask = df[feat].isnull()
+            df[feat] = df[feat].fillna('temp_NaN')
+            
         encoder.fit(df[feat])
         df[feat + '_le'] = encoder.transform(df[feat])
+        
+        if has_nan: # replacing back NaN values
+            df[feat + '_le'] = df[feat + '_le'].where(series_nan_mask==False, np.nan)
+        
         del df[feat]
     
 ###############     ad-hoc Testing     ###############
 if __name__ == "__main__":
-    load_training_data(testing_mode = DEBUG_MODE)
+    load_training_data(testing_mode=DEBUG_MODE, drop_na=False)
 
 
 
