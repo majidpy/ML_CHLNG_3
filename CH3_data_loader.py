@@ -92,7 +92,7 @@ def load_training_data(split_frac=0.1, drop_na=True,
         
     return (X_train, X_test, y_train, y_test, data_features)
 
-def load_test_data(drop_na=True, impute=True):
+def load_test_data(drop_na=True, testing_mode=False, impute=True):
     """
     Loads the test data from files and turns them into tables ready for 
     learning algorithms
@@ -106,7 +106,10 @@ def load_test_data(drop_na=True, impute=True):
 
     # Loading the dataset
     print("\nStarted loading test data ...")
-    data_frame = pd.read_csv('data/test.csv')
+    if testing_mode:
+        data_frame = pd.read_csv('data/test_toy.csv')
+    else:
+        data_frame = pd.read_csv('data/test.csv')
     print("Data loaded\n")    
 
     if drop_na:
@@ -128,13 +131,32 @@ def load_test_data(drop_na=True, impute=True):
               data_frame['browserid_le'].values, data_frame['devid_le'].values, 
               data_frame['day'].values, data_frame['hour'].values]
     
+    ID = np.c_[data_frame['ID'].values]
     # imputating data
     if impute:
         imp = preprocessing.Imputer()
         imp = imp.fit(X)
         X = imp.transform(X)
     
-    return X
+    return X, ID
+
+def save_test_results(ID, y):
+    """
+    Saves the results of main test to an csv file
+    Args:
+        ID(numpy matrix size n): the unique ID of the inputs
+        
+        y(numpy matrix size n): the predicted values
+        
+    Returns:
+        None
+        
+    Side effect:
+        Saves file called "data/results.csv"
+    """
+    data_frame = pd.DataFrame(y, index=ID.ravel(), columns=['click'])
+    data_frame.index.name = 'ID'
+    data_frame.to_csv('data/results.csv')
 
 def num_unique_val_fetures(df):
     """
