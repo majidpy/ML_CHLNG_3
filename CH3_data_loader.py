@@ -141,7 +141,7 @@ def load_test_data(drop_na=True, testing_mode=False, impute=True):
     
     return X, ID
 
-def save_test_results(ID, y):
+def save_test_results(ID, y, file_name):
     """
     Saves the results of main test to an csv file
     Args:
@@ -157,7 +157,7 @@ def save_test_results(ID, y):
     """
     data_frame = pd.DataFrame(y, index=ID.ravel(), columns=['click'])
     data_frame.index.name = 'ID'
-    data_frame.to_csv('data/results.csv')
+    data_frame.to_csv('data/' + file_name)
 
 def num_unique_val_fetures(df):
     """
