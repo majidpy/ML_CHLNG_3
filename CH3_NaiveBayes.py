@@ -5,9 +5,9 @@ from CH3_data_loader import load_training_data, load_test_data, save_test_result
 from sklearn.naive_bayes import GaussianNB
 
 ###############     Constants     ###############
-DEBUG_MODE = True
+DEBUG_MODE = False
 DROP_NAN = False
-SPLIT_FRACTION = 0.2
+SPLIT_FRACTION = 0.0
 RUN_MAIN_TEST = True
 
 ###############     Training     ###############

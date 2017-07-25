@@ -87,8 +87,9 @@ def load_training_data(split_frac=0.1, drop_na=True,
         imp = imp.fit(X_train)
         X_train = imp.transform(X_train)
         
-        imp = imp.fit(X_test)
-        X_test = imp.transform(X_test)
+        if (split_frac > 0):
+            imp = imp.fit(X_test)
+            X_test = imp.transform(X_test)
         
     return (X_train, X_test, y_train, y_test, data_features)
 
