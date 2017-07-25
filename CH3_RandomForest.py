@@ -3,6 +3,7 @@ A script for training of HackerEarth CH3 data
 """
 from CH3_data_loader import load_training_data, load_test_data, save_test_results
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import metrics
 
 ###############     Constants     ###############
 DEBUG_MODE = False 
@@ -10,6 +11,8 @@ DROP_NAN = False
 SPLIT_FRACTION = 0.0
 RUN_MAIN_TEST = True
 SAVE_FILE_NAME = 'results_rand_forest.csv'
+NUM_TREES = 40
+NUM_CPU_CORES = 4
 
 ###############     Training     ###############
 data = load_training_data(split_frac=SPLIT_FRACTION, 
@@ -21,15 +24,22 @@ y_train = data[2]
 y_test  = data[3]
 
 print('Started training ...\n')
-rfc = RandomForestClassifier(n_jobs=2) # Running 2 on cores
+rfc = RandomForestClassifier(n_estimators=NUM_TREES, n_jobs=NUM_CPU_CORES)
 rfc_model = rfc.fit(X_train, y_train)
 print('Training finished.\n')
 
 if SPLIT_FRACTION > 0:
     print('Started running cross validation ...\n')
+    # Getting accuracy 
     pred_score = rfc_model.score(X_test, y_test)
+    
+    # Getting ROC score (used in competition)
+    y_test_pred = rfc_model.predict_proba(X_test)
+    y_test_pred_click = y_test_pred[:,1]
+    pred_roc_c = metrics.roc_auc_score(y_test, y_test_pred_click)
+    
     print('Finished running cross validation.\n')
-    print('predicted score on the cross validation set is %.4f' %(pred_score*100))
+    print('Cross validation:\n Score %.4f \t ROC %.4f\n' %(pred_score*100, pred_roc_c))
 
 ###############     Testing main data     ###############    
 if RUN_MAIN_TEST:
