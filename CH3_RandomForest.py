@@ -8,12 +8,12 @@ from sklearn import metrics
 ###############     Constants     ###############
 DEBUG_MODE = False 
 DROP_NAN = False
-SPLIT_FRACTION = 0.2
-RUN_MAIN_TEST = False
+SPLIT_FRACTION = 0.0
+RUN_MAIN_TEST = True
 SAVE_FILE_NAME = 'results_rand_forest.csv'
 NUM_TREES = 200
 NUM_CPU_CORES = 4
-MIN_SAMPLE_LEAF = 5
+MIN_SAMPLE_LEAF = 50
 
 ###############     Training     ###############
 data = load_training_data(split_frac=SPLIT_FRACTION, 
