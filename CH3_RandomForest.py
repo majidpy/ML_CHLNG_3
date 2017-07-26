@@ -6,14 +6,14 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
 ###############     Constants     ###############
-DEBUG_MODE = False 
+DEBUG_MODE = True 
 DROP_NAN = False
-SPLIT_FRACTION = 0.2
-RUN_MAIN_TEST = False
+SPLIT_FRACTION = 0.0
+RUN_MAIN_TEST = True
 SAVE_FILE_NAME = 'results_rand_forest.csv'
 NUM_TREES = 200
 NUM_CPU_CORES = 4
-MIN_SAMPLE_LEAF = 5
+MIN_SAMPLE_LEAF = 50
 
 ###############     Training     ###############
 data = load_training_data(split_frac=SPLIT_FRACTION, 
@@ -23,6 +23,7 @@ X_train = data[0]
 X_test  = data[1] 
 y_train = data[2] 
 y_test  = data[3]
+training_encoder = data[4]
 
 print('Started training ...\n')
 rfc = RandomForestClassifier(n_estimators=NUM_TREES, 
@@ -46,7 +47,8 @@ if SPLIT_FRACTION > 0:
 
 ###############     Testing main data     ###############    
 if RUN_MAIN_TEST:
-    X, ID = load_test_data(drop_na=False, testing_mode=DEBUG_MODE)
+    X, ID = load_test_data(training_encoder,
+                           drop_na=False, testing_mode=DEBUG_MODE)
     print('Started running the main test ...')
     y = rfc_model.predict_proba(X)
     print('Finished running the main test.')

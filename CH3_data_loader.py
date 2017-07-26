@@ -11,6 +11,7 @@ from sklearn import preprocessing
 
 ###############     Constants     ###############
 DEBUG_MODE = True
+ENCODE_FEATS = ('countrycode', 'browserid', 'devid')
 
 ###############     Functions definitions     ###############
 def load_training_data(split_frac=0.1, drop_na=True, 
@@ -34,6 +35,8 @@ def load_training_data(split_frac=0.1, drop_na=True,
         3 y_test (numpy matrix): target values for testing 
         
         4 data_features(string list): main features names
+        
+        5 Encoders(string list): list of encoders for training set
     """
     # Loading the dataset
     print("\nStarted loading training data ...")
@@ -57,7 +60,7 @@ def load_training_data(split_frac=0.1, drop_na=True,
     remove_browserid_redundancy(data_frame)
     
     # Label encoding the stringg/object data
-    encode_labels(data_frame)
+    encoders_table = encode_train_labels(data_frame)
     
     # Finding the columns of the Dataframe
     data_features = data_frame.columns
@@ -91,14 +94,17 @@ def load_training_data(split_frac=0.1, drop_na=True,
             imp = imp.fit(X_test)
             X_test = imp.transform(X_test)
         
-    return (X_train, X_test, y_train, y_test, data_features)
+    return (X_train, X_test, y_train, y_test, data_features, encoders_table)
 
-def load_test_data(drop_na=True, testing_mode=False, impute=True):
+def load_test_data(encoders_list, drop_na=True, 
+                   testing_mode=False, impute=True):
     """
     Loads the test data from files and turns them into tables ready for 
     learning algorithms
     Args:
-        None
+        encoders_list (list): list of encoders
+        
+        rest is self explanotory
         
     Returns:
         X_test (numpy matrix): features of the model (original and engineered) prepared 
@@ -123,7 +129,7 @@ def load_test_data(drop_na=True, testing_mode=False, impute=True):
     remove_browserid_redundancy(data_frame)
     
     # Label encoding the stringg/object data
-    encode_labels(data_frame)
+    encode_train_labels(data_frame)
     
     # Turning data_fram into numerical matrix
     X = np.c_[data_frame['siteid'].values, data_frame['offerid'].values, 
@@ -234,9 +240,26 @@ def remove_browserid_redundancy(df):
     print("\nBrowers narrowed down to ", df['browserid'].unique(), "\n")
     
 
-def encode_labels(df, has_nan=True):
-    encoder = preprocessing.LabelEncoder()
-    for feat in ('countrycode', 'browserid', 'devid'):
+def encode_train_labels(df, has_nan=True):
+    """
+    Encodes the string data in TRAINING set with numerical labels
+    
+    Args:
+        df(pandas dataframe): the input data
+        
+        rest is self-explanatory
+        
+    Returns:
+        encoders_table (dictionary): contains lebeler, to be used with test data
+        
+    Side effect:
+        changes the input df
+    """    
+    encoders_table = {} # Creating an empty dictionary
+    
+    for feat in ENCODE_FEATS:
+        encoder = preprocessing.LabelEncoder()
+        encoders_table[feat] = encoder
         if has_nan: # temporarily replacing NaN values
             series_nan_mask = df[feat].isnull()
             df[feat] = df[feat].fillna('temp_NaN')
@@ -248,6 +271,42 @@ def encode_labels(df, has_nan=True):
             df[feat + '_le'] = df[feat + '_le'].where(series_nan_mask==False, np.nan)
         
         del df[feat]
+        
+    return encoders_table
+
+def encode_test_labels(df, encoders_table, has_nan=True):
+    """
+    Encodes the string data in TEST set with numerical labels
+    
+    Args:
+        df(pandas dataframe): the input data
+        
+        encoders_table(dictionary): containt the encoders used for encoding 
+        training data
+        
+        rest is self-explanatory
+        
+    Returns:
+        None
+        
+    Side effect:
+        changes the input df
+    """    
+
+    for feat in ENCODE_FEATS:
+        encoder = encoders_table[feat]
+        if has_nan: # temporarily replacing NaN values
+            series_nan_mask = df[feat].isnull()
+            df[feat] = df[feat].fillna('temp_NaN')
+
+        df[feat + '_le'] = encoder.transform(df[feat])
+        
+        if has_nan: # replacing back NaN values
+            df[feat + '_le'] = df[feat + '_le'].where(series_nan_mask==False, np.nan)
+        
+        del df[feat] 
+        
+    
     
 ###############     ad-hoc Testing     ###############
 if __name__ == "__main__":
