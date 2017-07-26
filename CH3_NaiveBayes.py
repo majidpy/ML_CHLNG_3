@@ -19,6 +19,7 @@ X_train = data[0]
 X_test  = data[1] 
 y_train = data[2] 
 y_test  = data[3]
+training_encoder = data[4]
 
 print('Started training ...\n')
 gnb = GaussianNB()
@@ -33,7 +34,8 @@ if SPLIT_FRACTION > 0:
 
 ###############     Testing main data     ###############    
 if RUN_MAIN_TEST:
-    X, ID = load_test_data(drop_na=False, testing_mode=DEBUG_MODE)
+    X, ID = load_test_data(training_encoder,
+                           drop_na=False, testing_mode=DEBUG_MODE)
     print('Started running the main test ...')
     y = gnb_model.predict_proba(X)
     print('Finished running the main test.')
