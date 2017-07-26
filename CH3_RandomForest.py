@@ -8,11 +8,12 @@ from sklearn import metrics
 ###############     Constants     ###############
 DEBUG_MODE = False 
 DROP_NAN = False
-SPLIT_FRACTION = 0.0
-RUN_MAIN_TEST = True
+SPLIT_FRACTION = 0.2
+RUN_MAIN_TEST = False
 SAVE_FILE_NAME = 'results_rand_forest.csv'
-NUM_TREES = 40
+NUM_TREES = 200
 NUM_CPU_CORES = 4
+MIN_SAMPLE_LEAF = 5
 
 ###############     Training     ###############
 data = load_training_data(split_frac=SPLIT_FRACTION, 
@@ -24,7 +25,9 @@ y_train = data[2]
 y_test  = data[3]
 
 print('Started training ...\n')
-rfc = RandomForestClassifier(n_estimators=NUM_TREES, n_jobs=NUM_CPU_CORES)
+rfc = RandomForestClassifier(n_estimators=NUM_TREES, 
+                             n_jobs=NUM_CPU_CORES,criterion='entropy',
+                             min_samples_leaf=MIN_SAMPLE_LEAF)
 rfc_model = rfc.fit(X_train, y_train)
 print('Training finished.\n')
 
