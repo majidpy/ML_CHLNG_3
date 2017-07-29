@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
 ###############     Constants     ###############
-DEBUG_MODE = True 
+DEBUG_MODE = False
 DROP_NAN = False
 SPLIT_FRACTION = 0.0
 RUN_MAIN_TEST = True
