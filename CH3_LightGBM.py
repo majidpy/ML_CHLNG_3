@@ -26,17 +26,16 @@ print('Started training ...\n')
 dtrain = lgb.Dataset(X_train, y_train)
 dval = lgb.Dataset(X_test, y_test, reference=dtrain)
 params = {
-    'num_leaves' : 20,
+    'num_leaves' : 50,
     'learning_rate':0.01,
     'metric':'auc',
     'application':'binary',
     'early_stopping_round': 40,
-    'max_depth':40,
-    'bagging_fraction':0.5,
-    'feature_fraction':0.6,
+    'max_depth':100,
+    'num_threads':4,
     'verbose' : 1  
 }
-num_rounds = 10
+num_rounds = 200
 lgb_model = lgb.train(params, dtrain, num_rounds, valid_sets=dval)
 print('Training finished.\n')
 
