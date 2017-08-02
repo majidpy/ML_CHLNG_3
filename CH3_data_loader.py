@@ -12,10 +12,15 @@ from sklearn import preprocessing
 ###############     Constants     ###############
 DEBUG_MODE = True
 ENCODE_FEATS = ('countrycode', 'browserid', 'devid')
+FULL_COLUMN_LIST = ['siteid', 'offerid', 'category', 'merchant',
+                  'countrycode_le', 'browserid_le', 'devid_le', 'day', 'hour']
+REDUCED_COLUMN_LIST = ['siteid','offerid', 'category', 'merchant',
+                       'countrycode_le', 'browserid_le', 'devid_le']
 
 ###############     Functions definitions     ###############
 def load_training_data(split_frac=0.1, drop_na=True, 
-                       testing_mode=False, impute=True):
+                       testing_mode=False, impute=True, reduced=False, 
+                       report_uniq_vals=False):
     """
     Loads the training data from files and turns them into tables ready for 
     learning algorithms
@@ -50,8 +55,9 @@ def load_training_data(split_frac=0.1, drop_na=True,
         # Dropping data records with NaN
         data_frame = data_frame.dropna(how='any')
 
-    # Report on unique values in each feature
-    num_unique_val_fetures(data_frame)
+    if report_uniq_vals:
+        # Report on unique values in each feature
+        num_unique_val_fetures(data_frame)
     
     # Cleaning up the date and time data
     parse_date_time_data(data_frame)
@@ -66,17 +72,17 @@ def load_training_data(split_frac=0.1, drop_na=True,
     data_features = data_frame.columns
     
     # Turning data_fram into numerical matrix
-    X = np.c_[data_frame['siteid'].values, data_frame['offerid'].values, 
-              data_frame['category'].values, data_frame['merchant'].values, 
-              data_frame['countrycode_le'].values, 
-              data_frame['browserid_le'].values, data_frame['devid_le'].values, 
-              data_frame['day'].values, data_frame['hour'].values]
+    if reduced:
+        X = np.c_[data_frame[REDUCED_COLUMN_LIST].values]
+    else:
+        X = np.c_[data_frame[FULL_COLUMN_LIST].values]
 
     y = data_frame['click'].values
                   
     # Splitting dataset into train and test 
     if (split_frac > 0):
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split_frac)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, 
+                                                            test_size=split_frac)
     else:
         X_train = X
         X_test  = []
@@ -97,7 +103,7 @@ def load_training_data(split_frac=0.1, drop_na=True,
     return (X_train, X_test, y_train, y_test, data_features, encoders_table)
 
 def load_test_data(encoders_list, drop_na=True, 
-                   testing_mode=False, impute=True):
+                   testing_mode=False, impute=True, reduced=False):
     """
     Loads the test data from files and turns them into tables ready for 
     learning algorithms
@@ -132,11 +138,10 @@ def load_test_data(encoders_list, drop_na=True,
     encode_train_labels(data_frame)
     
     # Turning data_fram into numerical matrix
-    X = np.c_[data_frame['siteid'].values, data_frame['offerid'].values, 
-              data_frame['category'].values, data_frame['merchant'].values, 
-              data_frame['countrycode_le'].values, 
-              data_frame['browserid_le'].values, data_frame['devid_le'].values, 
-              data_frame['day'].values, data_frame['hour'].values]
+    if reduced:
+        X = np.c_[data_frame[REDUCED_COLUMN_LIST].values]
+    else:
+        X = np.c_[data_frame[FULL_COLUMN_LIST].values]
     
     ID = np.c_[data_frame['ID'].values]
     # imputating data
@@ -310,7 +315,7 @@ def encode_test_labels(df, encoders_table, has_nan=True):
     
 ###############     ad-hoc Testing     ###############
 if __name__ == "__main__":
-    load_training_data(testing_mode=DEBUG_MODE, drop_na=False)
+    ans = load_training_data(testing_mode=DEBUG_MODE, drop_na=False, reduced=False)
 
 
 
