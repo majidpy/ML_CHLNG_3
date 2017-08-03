@@ -1,7 +1,7 @@
 """
 Code for participating in HackerEarth Challenge 3
 @author: Mojtaba
-Method: Logistic Regression
+Method: Data loading and preparation
 """
 ###############     Libraries     ###############
 import numpy as np
@@ -57,6 +57,8 @@ def load_training_data(split_frac=0.1, drop_na=True,
 
     if report_uniq_vals:
         # Report on unique values in each feature
+        # This was better to be done after cleaning up data
+        # but is done here just to get an idea about data diversity
         num_unique_val_fetures(data_frame)
     
     # Cleaning up the date and time data
