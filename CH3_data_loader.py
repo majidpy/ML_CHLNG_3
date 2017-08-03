@@ -14,8 +14,8 @@ DEBUG_MODE = True
 ENCODE_FEATS = ('countrycode', 'browserid', 'devid')
 FULL_COLUMN_LIST = ['siteid', 'offerid', 'category', 'merchant',
                   'countrycode_le', 'browserid_le', 'devid_le', 'day', 'hour']
-REDUCED_COLUMN_LIST = ['siteid','offerid', 'category', 'merchant',
-                       'countrycode_le', 'browserid_le', 'devid_le']
+REDUCED_COLUMN_LIST = ['siteid', 'category', 'merchant',
+                       'countrycode_le', 'browserid_le', 'devid_le', 'hour']
 
 ###############     Functions definitions     ###############
 def load_training_data(split_frac=0.1, drop_na=True, 

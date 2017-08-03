@@ -10,11 +10,13 @@ DEBUG_MODE = False
 DROP_NAN = False
 SPLIT_FRACTION = 0.1
 RUN_MAIN_TEST = True
+REDUCED_MODEL = True
 SAVE_FILE_NAME = 'results_catboost.csv'
 
 ###############     Training     ###############
 data = load_training_data(split_frac=SPLIT_FRACTION, 
-                        drop_na=DROP_NAN, testing_mode=DEBUG_MODE)
+                        drop_na=DROP_NAN, testing_mode=DEBUG_MODE,
+                        reduced=REDUCED_MODEL)
 
 X_train = data[0]
 X_test  = data[1] 
@@ -46,7 +48,8 @@ if SPLIT_FRACTION > 0:
 ###############     Testing main data     ###############    
 if RUN_MAIN_TEST:
     X, ID = load_test_data(training_encoder, 
-                           drop_na=False, testing_mode=DEBUG_MODE)
+                           drop_na=False, testing_mode=DEBUG_MODE,
+                           reduced=REDUCED_MODEL)
     print('Started running the main test ...')
     y = cb_model.predict_proba(X)
     print('Finished running the main test.')
