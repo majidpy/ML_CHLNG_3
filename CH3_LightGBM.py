@@ -21,7 +21,8 @@ X_train = data[0]
 X_test  = data[1] 
 y_train = data[2] 
 y_test  = data[3]
-training_encoder = data[4]
+data_columns = data[4]
+training_encoder = data[5]
 
 print('Started training ...\n')
 dtrain = lgb.Dataset(X_train, y_train)

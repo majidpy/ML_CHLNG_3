@@ -137,7 +137,7 @@ def load_test_data(encoders_list, drop_na=True,
     remove_browserid_redundancy(data_frame)
     
     # Label encoding the stringg/object data
-    encode_train_labels(data_frame)
+    encode_test_labels(data_frame, encoders_list)
     
     # Turning data_fram into numerical matrix
     if reduced:
